@@ -51,6 +51,7 @@ class AdminPage {
 	public function __construct( array|bool $options ) {
 		if ( $options ) {
 			$this->options = $options;
+		} else {
 			update_option( GBD_PLUGIN_SLUG, $this->options );
 		}
 	}
