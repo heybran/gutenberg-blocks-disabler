@@ -46,20 +46,21 @@ class AdminPage {
 	/**
 	 * Constructor.
 	 *
-	 * @param array $options
+	 * @param array|bool $options
 	 */
-	public function __construct( array $options ) {
+	public function __construct( array|bool $options ) {
 		if ( $options ) {
 			$this->options = $options;
+			update_option( GBD_PLUGIN_SLUG, $this->options );
 		}
 	}
 
 	/**
-	 * Register the src page class with all the appropriate WordPress hooks.
+	 * Register the admin page class with all the appropriate WordPress hooks.
 	 *
-	 * @param array $options
+	 * @param array|bool $options
 	 */
-	public static function register( array $options ) {
+	public static function register( array|bool $options ) {
 		$page = new self( $options );
 
 		add_action( 'admin_menu', array( $page, 'addAdminPage' ) );
@@ -67,14 +68,14 @@ class AdminPage {
 	}
 
 	/**
-	 * Adds the src page to the menu.
+	 * Adds the admin page to the menu.
 	 */
 	public function addAdminPage() {
 		add_options_page( GBD_PLUGIN_NAME, GBD_PLUGIN_NAME, 'install_plugins', GBD_PLUGIN_SLUG, array( $this, 'render' ) );
 	}
 
 	/**
-	 * Renders the src page using the Settings API.
+	 * Renders the admin page.
 	 */
 	public function render() {
 		$wp_block_type_registry = \WP_Block_Type_Registry::get_instance();
@@ -124,15 +125,17 @@ class AdminPage {
 	 * Save the selected block types into database.
 	 */
 	public function saveSettings() {
-		if ( isset( $_POST['submit'] ) ) {
-			unset( $_POST['submit'] );
-			foreach ( $_POST as $block => $value ) {
-				$_POST[ $block ] = sanitize_text_field( $value );
-			}
-
-			update_option( GBD_PLUGIN_SLUG, array_keys( $_POST ) );
-			wp_safe_redirect( admin_url( 'options-general.php?page=' . GBD_PLUGIN_SLUG . '&settings-update=true' ) );
-			exit;
+		if ( ! isset( $_POST['submit'] ) ) {
+			return;
 		}
+
+		unset( $_POST['submit'] );
+		foreach ( $_POST as $block => $value ) {
+			$_POST[ $block ] = sanitize_text_field( $value );
+		}
+
+		update_option( GBD_PLUGIN_SLUG, array_keys( $_POST ) );
+		wp_safe_redirect( admin_url( 'options-general.php?page=' . GBD_PLUGIN_SLUG . '&settings-update=true' ) );
+		exit;
 	}
 }
